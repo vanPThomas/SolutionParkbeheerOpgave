@@ -2,10 +2,9 @@
 using ParkBusinessLayer.Interfaces;
 using ParkBusinessLayer.Model;
 using ParkDataLayer.Model;
-using System;
 using ParkDataLayer.Mappers;
-using System.Collections.Generic;
 using ParkDataLayer.Exceptions;
+using System;
 using System.Linq;
 
 namespace ParkDataLayer.Repositories
@@ -40,22 +39,64 @@ namespace ParkDataLayer.Repositories
 
         public bool HeeftHuis(string straat, int nummer, Park park)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return ctx.Huizen.Any(
+                    h => h.Straat == straat && h.Nr == nummer && h.Park.Id == park.Id
+                );
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("HeeftHuis", ex);
+            }
         }
 
         public bool HeeftHuis(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return ctx.Huizen.Any(h => h.Id == id);
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("HeeftHuis", ex);
+            }
         }
 
         public void UpdateHuis(Huis huis)
         {
-            throw new NotImplementedException();
+            try
+            {
+                HuisEF huisEF = ctx.Huizen.Find(huis.Id);
+
+                huisEF.Straat = huis.Straat;
+                huisEF.Nr = huis.Nr;
+                huisEF.Actief = huis.Actief;
+
+                ctx.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("UpdateHuis", ex);
+            }
         }
 
         public Huis VoegHuisToe(Huis h)
         {
-            throw new NotImplementedException();
+            try
+            {
+                HuisEF huisEF = HuisMapper.MapToData(h);
+
+                ctx.Huizen.Add(huisEF);
+
+                ctx.SaveChanges();
+
+                return HuisMapper.MapToBusiness(huisEF);
+            }
+            catch (Exception ex)
+            {
+                throw new RepositoryException("VoegHuisToe", ex);
+            }
         }
     }
 }

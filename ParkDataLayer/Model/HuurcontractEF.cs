@@ -7,7 +7,7 @@ namespace ParkDataLayer.Model
     {
         [Key]
         [MaxLength(25)]
-        public string Id { get; private set; }
+        public string Id { get; set; }
 
         public HuurderEF Huurder { get; set; }
         public HuisEF Huis { get; set; }
