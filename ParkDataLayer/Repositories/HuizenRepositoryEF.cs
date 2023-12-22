@@ -12,10 +12,12 @@ namespace ParkDataLayer.Repositories
     public class HuizenRepositoryEF : IHuizenRepository
     {
         DBContext ctx;
+        ParkRepository parkRepo;
 
-        public HuizenRepositoryEF()
+        public HuizenRepositoryEF(ParkRepository repo, DBContext ctx)
         {
-            ctx = new DBContext();
+            this.ctx = ctx;
+            parkRepo = repo;
         }
 
         public Huis GeefHuis(int id)
@@ -29,7 +31,7 @@ namespace ParkDataLayer.Repositories
                     .ThenInclude(hu => hu.Huurder)
                     .FirstOrDefault(h => h.Id == id);
 
-                return h != null ? HuisMapper.MapToBusiness(h) : null;
+                return h != null ? HuisMapper.MapToBusiness(h, null) : null;
             }
             catch (Exception ex)
             {
@@ -85,13 +87,13 @@ namespace ParkDataLayer.Repositories
         {
             try
             {
-                HuisEF huisEF = HuisMapper.MapToData(h);
+                HuisEF huisEF = HuisMapper.MapToData(h, parkRepo);
 
                 ctx.Huizen.Add(huisEF);
 
                 ctx.SaveChanges();
 
-                return HuisMapper.MapToBusiness(huisEF);
+                return HuisMapper.MapToBusiness(huisEF, null);
             }
             catch (Exception ex)
             {

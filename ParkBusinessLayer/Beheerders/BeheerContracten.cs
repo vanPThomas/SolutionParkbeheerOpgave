@@ -15,12 +15,12 @@ namespace ParkBusinessLayer.Beheerders
             this.repo = repo;
         }
 
-        public void MaakContract(string id,Huurperiode huurperiode, Huurder huurder, Huis huis)
+        public void MaakContract(string id, Huurperiode huurperiode, Huurder huurder, Huis huis)
         {
             try
             {
-                Huurcontract contract = new Huurcontract(id,huurperiode,huurder,huis);
-                if (repo.HeeftContract(huurperiode.StartDatum, huurder.Id, huis.Id)) 
+                Huurcontract contract = new Huurcontract(id, huurperiode, huurder, huis);
+                if (repo.HeeftContract(huurperiode.StartDatum, huurder.Id, huis.Id))
                     throw new BeheerderException("Maakcontract bestaat al");
                 repo.VoegContractToe(contract);
             }
@@ -29,7 +29,8 @@ namespace ParkBusinessLayer.Beheerders
                 throw new BeheerderException("", ex);
             }
         }
-        public void AnnuleerContract(Huurcontract contract )
+
+        public void AnnuleerContract(Huurcontract contract)
         {
             try
             {
@@ -40,11 +41,13 @@ namespace ParkBusinessLayer.Beheerders
                 throw new BeheerderException("", ex);
             }
         }
+
         public void UpdateContract(Huurcontract contract)
         {
             try
             {
-                if (!repo.HeeftContract(contract.Id)) throw new BeheerderException("updatecontract");
+                if (!repo.HeeftContract(contract.Id))
+                    throw new BeheerderException("updatecontract");
                 repo.UpdateContract(contract);
             }
             catch (Exception ex)
@@ -52,6 +55,7 @@ namespace ParkBusinessLayer.Beheerders
                 throw new BeheerderException("", ex);
             }
         }
+
         public Huurcontract GeefContract(string id)
         {
             try
@@ -63,11 +67,12 @@ namespace ParkBusinessLayer.Beheerders
                 throw new BeheerderException("", ex);
             }
         }
-        public List<Huurcontract> GeefContracten(DateTime dtBegin,DateTime? dtEinde)
+
+        public List<Huurcontract> GeefContracten(DateTime dtBegin, DateTime? dtEinde)
         {
             try
             {
-                return repo.GeefContracten(dtBegin,dtEinde);
+                return repo.GeefContracten(dtBegin, dtEinde);
             }
             catch (Exception ex)
             {

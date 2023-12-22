@@ -1,6 +1,7 @@
 ﻿using ParkBusinessLayer.Model;
 using ParkDataLayer.Exceptions;
 using ParkDataLayer.Model;
+using ParkDataLayer.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace ParkDataLayer.Mappers
 {
     public class HuisMapper
     {
-        public static Huis MapToBusiness(HuisEF huisEF)
+        public static Huis MapToBusiness(HuisEF huisEF, Park park)
         {
             try
             {
@@ -19,28 +20,14 @@ namespace ParkDataLayer.Mappers
                 Dictionary<Huurder, List<Huurcontract>> _huurcontracten =
                     new Dictionary<Huurder, List<Huurcontract>>();
 
-                foreach (HuurcontractEF huurcontractEF in huisEF.Huurcontracten)
+                if (huisEF.Huurcontracten.Count > 0)
                 {
-                    Huurder huurder = HuurderMapper.MapToBusiness(huurcontractEF.Huurder);
-                    Huurcontract huurcontract = HuurcontractMapper.MapToBusiness(huurcontractEF);
-                    bool isContained = false;
-                    foreach (Huurder h in _huurcontracten.Keys)
-                    {
-                        if (h.Id == huurder.Id)
-                        {
-                            isContained = true;
-                            break;
-                        }
-                    }
-                    if (!isContained)
-                    {
-                        List<Huurcontract> huurcontracten = huisEF.Huurcontracten
-                            .Select(
-                                huurcontractEF => HuurcontractMapper.MapToBusiness(huurcontractEF)
-                            )
-                            .ToList();
-                        _huurcontracten.Add(huurder, huurcontracten);
-                    }
+                    _huurcontracten = huisEF.Huurcontracten
+                        .GroupBy(hcEF => HuurderMapper.MapToBusiness(hcEF.Huurder))
+                        .ToDictionary(
+                            group => group.Key,
+                            group => group.Select(HuurcontractMapper.MapToBusiness).ToList()
+                        );
                 }
 
                 return new Huis(
@@ -48,7 +35,7 @@ namespace ParkDataLayer.Mappers
                     huisEF.Straat,
                     huisEF.Nr,
                     huisEF.Actief,
-                    ParkMapper.MapToBusiness(huisEF.Park),
+                    park != null ? park : ParkMapper.MapToBusiness(huisEF.Park, park),
                     _huurcontracten
                 );
             }
@@ -58,7 +45,35 @@ namespace ParkDataLayer.Mappers
             }
         }
 
-        public static HuisEF MapToData(Huis huis)
+        public static Huis MapToBusinessForHuurcontract(HuisEF huisEF)
+        {
+            try
+            {
+                if (huisEF == null)
+                    return null;
+
+                if (huisEF.Park != null)
+                {
+                    return new Huis(
+                        huisEF.Id,
+                        huisEF.Straat,
+                        huisEF.Nr,
+                        huisEF.Actief,
+                        ParkMapper.MapToBusiness(huisEF.Park, null)
+                    );
+                }
+                else
+                {
+                    return new Huis(huisEF.Id, huisEF.Straat, huisEF.Nr, huisEF.Actief, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new MapperException("Error mapping HuisEF to Huis.", ex);
+            }
+        }
+
+        public static HuisEF MapToData(Huis huis, ParkRepository parkRepo)
         {
             try
             {
@@ -72,8 +87,8 @@ namespace ParkDataLayer.Mappers
                     Straat = huis.Straat,
                     Nr = huis.Nr,
                     Actief = huis.Actief,
-                    Park = ParkMapper.MapToData(huis.Park),
-                    Huurcontracten = MapHuurcontracten(huurcontracten)
+                    Park = ParkMapper.MapToData(huis.Park, parkRepo),
+                    Huurcontracten = MapHuurcontracten(huurcontracten, parkRepo)
                 };
             }
             catch (Exception ex)
@@ -83,7 +98,8 @@ namespace ParkDataLayer.Mappers
         }
 
         private static ICollection<HuurcontractEF> MapHuurcontracten(
-            List<Huurcontract> huurcontracten
+            List<Huurcontract> huurcontracten,
+            ParkRepository parkRepo
         )
         {
             var result = new List<HuurcontractEF>();
@@ -92,7 +108,7 @@ namespace ParkDataLayer.Mappers
             {
                 foreach (var huurcontract in huurcontracten)
                 {
-                    result.Add(HuurcontractMapper.MapToData(huurcontract));
+                    result.Add(HuurcontractMapper.MapToData(huurcontract, parkRepo));
                 }
             }
 

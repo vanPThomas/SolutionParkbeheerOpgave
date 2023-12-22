@@ -1,6 +1,7 @@
 ﻿using ParkBusinessLayer.Model;
 using ParkDataLayer.Exceptions;
 using ParkDataLayer.Model;
+using ParkDataLayer.Repositories;
 using System;
 using System.Collections.Generic;
 
@@ -19,7 +20,7 @@ namespace ParkDataLayer.Mappers
                     contractEF.Id,
                     new Huurperiode(contractEF.StartDatum, contractEF.Aantaldagen),
                     HuurderMapper.MapToBusiness(contractEF.Huurder),
-                    HuisMapper.MapToBusiness(contractEF.Huis)
+                    HuisMapper.MapToBusinessForHuurcontract(contractEF.Huis)
                 );
             }
             catch (Exception ex)
@@ -28,7 +29,7 @@ namespace ParkDataLayer.Mappers
             }
         }
 
-        public static HuurcontractEF MapToData(Huurcontract contract)
+        public static HuurcontractEF MapToData(Huurcontract contract, ParkRepository parkRepo)
         {
             try
             {
@@ -39,7 +40,7 @@ namespace ParkDataLayer.Mappers
                 {
                     Id = contract.Id,
                     Huurder = HuurderMapper.MapToData(contract.Huurder),
-                    Huis = HuisMapper.MapToData(contract.Huis),
+                    Huis = HuisMapper.MapToData(contract.Huis, parkRepo),
                     StartDatum = contract.Huurperiode.StartDatum,
                     EindDatum = contract.Huurperiode.EindDatum,
                     Aantaldagen = contract.Huurperiode.Aantaldagen

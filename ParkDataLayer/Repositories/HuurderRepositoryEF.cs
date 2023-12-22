@@ -14,9 +14,9 @@ namespace ParkDataLayer.Repositories
     {
         DBContext ctx;
 
-        public HuurderRepositoryEF()
+        public HuurderRepositoryEF(DBContext ctx)
         {
-            ctx = new DBContext();
+            this.ctx = ctx;
         }
 
         public Huurder GeefHuurder(int id)

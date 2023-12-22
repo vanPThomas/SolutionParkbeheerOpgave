@@ -13,10 +13,12 @@ namespace ParkDataLayer.Repositories
     public class ContractenRepositoryEF : IContractenRepository
     {
         DBContext ctx;
+        ParkRepository parkRepo;
 
-        public ContractenRepositoryEF()
+        public ContractenRepositoryEF(ParkRepository parkRepo, DBContext ctx)
         {
-            ctx = new DBContext();
+            this.ctx = ctx;
+            this.parkRepo = parkRepo;
         }
 
         public void AnnuleerContract(Huurcontract contract)
@@ -134,7 +136,7 @@ namespace ParkDataLayer.Repositories
         {
             try
             {
-                HuurcontractEF contractEF = HuurcontractMapper.MapToData(contract);
+                HuurcontractEF contractEF = HuurcontractMapper.MapToData(contract, parkRepo);
 
                 ctx.Huurcontracten.Add(contractEF);
 
